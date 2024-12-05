@@ -37,3 +37,32 @@
 (defn part-one []
   (println "Test ->" (run-problem-one (crossword test-txt)) "Expected = 18"
            "\nChallenge ->" (run-problem-one (crossword input-txt))))
+
+(defn are-x-corners? [matrix i1 j1 i2 j2]
+  (or
+   (and
+    (= (get-at-pos matrix i1 j1) \S)
+    (= (get-at-pos matrix i2 j2) \M))
+   (and
+    (= (get-at-pos matrix i1 j1) \M)
+    (= (get-at-pos matrix i2 j2) \S))))
+
+(defn is-x-center? [matrix i j]
+  (and
+   (= (get-at-pos matrix i j) \A)
+   (are-x-corners? matrix (inc i) (dec j) (dec i) (inc j))
+   (are-x-corners? matrix (dec i) (dec j) (inc i) (inc j))))
+
+(defn run-problem-two [cw]
+  (get
+   (frequencies
+    (for
+     [i (range 1 (dec (get-height cw)))
+      j (range 1 (dec (get-width cw)))]
+      (is-x-center? cw i j)))
+   true))
+
+(defn part-two []
+  (println "Test ->" (run-problem-two (crossword test-txt)) "Expected = 9"
+           "\nChallenge ->" (run-problem-two (crossword input-txt))))
+
