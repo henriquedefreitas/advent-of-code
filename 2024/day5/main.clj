@@ -12,25 +12,29 @@
   (str/split rule #","))
 
 (defn get-rules [text]
-  (map split-rule (first (partition-by empty? (str/split-lines text)))))
+  (map (fn [pair] (map Integer/parseInt pair))
+       (map split-rule
+            (first (partition-by empty? (str/split-lines text))))))
 
 (defn get-orderings [text]
-  (map split-ordering (last (partition-by empty? (str/split-lines text)))))
+  (map (fn [pages] (map Integer/parseInt pages))
+       (map split-ordering
+            (last (partition-by empty? (str/split-lines text))))))
 
-; a[b] = -1 ----> b precedes a
-(defn get-order-mapping [rules]
+; a[b] = 1 ---> a precedes b
+(defn get-order-mapping [rules-pairs]
   (reduce
    (fn [m [a b]]
      (-> m
-         (assoc-in [a b] true)))
+         (assoc a (conj (get m a #{}) b))))
    {}
-   rules))
+   rules-pairs))
 
-(defn are-pages-correct? [ordering rules-mapping]
-  (for [i (range (count ordering))
-        j (range (count ordering))
-        :when (< i j)]
-    (not (true? (get-in rules-mapping [(nth ordering j) (nth ordering i)])))))
+(defn is-ordering-correct? [ordering pages-sucessors]
+  (every? true? (for [i (range (count ordering))
+                      j (range (count ordering))
+                      :when (< i j)]
+                  (not (contains? (get pages-sucessors (nth ordering j) #{}) (nth ordering i))))))
 
 (defn get-middle-page [ordering]
   (nth ordering (/ (dec (count ordering)) 2)))
@@ -41,7 +45,7 @@
     orderings (get-orderings text)]
     (apply + (map
               (fn [ordering]
-                (if (true? (are-pages-correct? ordering rules-mapping))
+                (if (is-ordering-correct? ordering rules-mapping)
                   (get-middle-page ordering)
                   0))
               orderings))))
