@@ -54,8 +54,26 @@
   (println "Test =" (solve-part-one test-input) "| Expected = 143"
            "\nAnswer = " (solve-part-one input)))
 
-(defn solve-part-two [text])
+(defn pages-sort [pages rules-mapping]
+  (let [comparator
+        (fn [a b]
+          (cond
+            (contains? (get rules-mapping a) b)  1
+            (contains? (get rules-mapping b) a) -1
+            :else 0))]
+    (sort comparator pages)))
+
+(defn solve-part-two [text]
+  (let
+   [rules-mapping (get-order-mapping (get-rules text))
+    orderings (get-orderings text)]
+    (apply + (map
+              (fn [ordering]
+                (if (not (is-ordering-correct? ordering rules-mapping))
+                  (get-middle-page (pages-sort ordering rules-mapping))
+                  0))
+              orderings))))
 
 (defn print-part-two []
-  (println "Test =" (solve-part-two test-input) "| Expected = "
+  (println "Test =" (solve-part-two test-input) "| Expected = 123"
            "\nAnswer = " (solve-part-two input)))
